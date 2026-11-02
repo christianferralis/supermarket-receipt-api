@@ -5,8 +5,8 @@ import pytest
 from supermarket_receipt_api.checkout import (
     line_subtotal_cents,
     percentage_discount_cents,
+    three_for_two_discount_cents,
     validate_quantity,
-    three_for_two_discount_cents
 )
 
 
