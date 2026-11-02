@@ -2,7 +2,12 @@
 
 import pytest
 
-from supermarket_receipt_api.checkout import line_subtotal_cents, percentage_discount_cents
+from supermarket_receipt_api.checkout import (
+    line_subtotal_cents,
+    percentage_discount_cents,
+    validate_quantity,
+    three_for_two_discount_cents
+)
 
 
 @pytest.mark.parametrize(
@@ -55,3 +60,84 @@ def test_percentage_discount_nominal(
         AssertionError: Si la réduction calculée diffère de expected.
     """
     assert percentage_discount_cents(subtotal_cents, discount_percent) == expected
+
+
+@pytest.mark.parametrize("quantity, expected", [(1, 1), (3, 3)])
+def test_validate_quantity(quantity: int, expected: int) -> None:
+    """Vérifier la validation de la quantité.
+
+    Args:
+        quantity (int): Quantité à valider fournie par pytest.
+        expected (int): Quantité attendue fournie par pytest.
+
+    Returns:
+        None: Le test réussit si la validation fonctionne correctement.
+
+    Raises:
+        AssertionError: Si la validation échoue pour des quantités valides.
+    """
+    # Cas valides
+    assert validate_quantity(quantity) == expected
+
+
+@pytest.mark.parametrize("quantity", [0, -1])
+def test_validate_quantity_invalid(quantity: int) -> None:
+    """Vérifier la validation de la quantité pour des cas invalides.
+
+    Args:
+        quantity (int): Quantité à valider fournie par pytest.
+
+    Returns:
+        None: Le test réussit si la validation échoue pour des quantités invalides.
+
+    Raises:
+        AssertionError: Si la validation réussit pour des quantités invalides.
+    """
+    # Cas invalides
+    with pytest.raises(ValueError):
+        validate_quantity(quantity)
+
+
+@pytest.mark.parametrize("quantity", [1.5, "2", True])
+def test_validate_quantity_invalid_types(quantity: float | str | bool) -> None:
+    """Vérifier la validation de la quantité pour des types invalides.
+
+    Args:
+        quantity (float, str, bool): Quantité à valider fournie par pytest.
+
+    Returns:
+        None: Le test réussit si la validation échoue pour des types invalides.
+
+    Raises:
+        AssertionError: Si la validation réussit pour des types invalides.
+    """
+    # Cas invalides de type
+    with pytest.raises(TypeError):
+        validate_quantity(quantity)
+
+
+@pytest.mark.parametrize(
+    "quantity, unit_price_cents, expected",
+    [
+        (3, 100, 100),
+        (4, 100, 100),
+        (5, 100, 100),
+        (6, 100, 200),
+        (1, 100, 0),
+        (2, 100, 0),
+    ]
+)
+def test_three_for_two_discount_nominal(unit_price_cents: int, quantity: int, expected: int) -> None:
+    """Vérifier le calcul de la réduction "3 pour 2".
+
+    Aucun effet de bord ni application HTTP.
+
+    Returns:
+        None: Le test réussit si la réduction calculée correspond à l'attendu.
+
+    Raises:
+        AssertionError: Si la réduction calculée diffère de l'attendu.
+    """
+    assert three_for_two_discount_cents(unit_price_cents, quantity) == expected
+
+
