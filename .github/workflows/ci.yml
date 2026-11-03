@@ -13,7 +13,21 @@ permissions:
 
 jobs:
   ci:
-    name: "Contrôles qualité et tests"
+    strategy:
+      fail-fast: false
+      matrix:
+        commande:
+        
+        - name: "Lint"
+          value: "uv run ruff check ."
+        - name: "verifier le formatage"
+          value: "uv run ruff format --check ."
+        - name: "Tests unitaires"
+          value: "uv run pytest tests/unit --cov=supermarket_receipt_api.checkout --cov-report=term-missing"
+        - name: "Tests d'intégration"
+          value: "uv run pytest tests/integration --cov=supermarket_receipt_api.checkout --cov-report=term-missing"
+
+    name: "${{ matrix.commande.name }}"
     runs-on: "ubuntu-latest"
     timeout-minutes: 5
     steps:
@@ -31,14 +45,5 @@ jobs:
       - name: "Installer les dépendances"
         run: "uv sync --locked"
 
-      - name: "Lint"
-        run: "uv run ruff check ."
-
-      - name: "verifier le formatage"
-        run: "uv run ruff format --check ."
-
-      - name: "Tests unitaires"
-        run: "uv run pytest tests/unit --cov=supermarket_receipt_api.checkout --cov-report=term-missing"
-
-      - name: "Tests d'intégration"
-        run: "uv run pytest tests/integration --cov=supermarket_receipt_api.checkout --cov-report=term-missing"
+      - name: "Exécuter la commande"
+        run: "${{ matrix.commande.value }}"
