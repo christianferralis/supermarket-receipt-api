@@ -5,8 +5,8 @@ import pytest
 from supermarket_receipt_api.checkout import (
     line_subtotal_cents,
     percentage_discount_cents,
+    three_for_two_discount_cents,
     validate_quantity,
-    three_for_two_discount_cents
 )
 
 
@@ -125,9 +125,11 @@ def test_validate_quantity_invalid_types(quantity: float | str | bool) -> None:
         (6, 100, 200),
         (1, 100, 0),
         (2, 100, 0),
-    ]
+    ],
 )
-def test_three_for_two_discount_nominal(unit_price_cents: int, quantity: int, expected: int) -> None:
+def test_three_for_two_discount_nominal(
+    unit_price_cents: int, quantity: int, expected: int
+) -> None:
     """Vérifier le calcul de la réduction "3 pour 2".
 
     Aucun effet de bord ni application HTTP.
@@ -139,5 +141,3 @@ def test_three_for_two_discount_nominal(unit_price_cents: int, quantity: int, ex
         AssertionError: Si la réduction calculée diffère de l'attendu.
     """
     assert three_for_two_discount_cents(unit_price_cents, quantity) == expected
-
-

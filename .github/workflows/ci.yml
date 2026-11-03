@@ -7,7 +7,7 @@ permissions:
 
 jobs:
   ci:
-    name: "CI à compléter"
+    name: "Contrôles qualité et tests"
     runs-on: "ubuntu-latest"
     timeout-minutes: 5
     steps:
@@ -16,4 +16,20 @@ jobs:
         with:
           persist-credentials: false
 
-      # À compléter pendant le TD : environnement, dépendances et vérifications.
+      - name: "Configurer l'environnement Python"
+        uses: "astral-sh/setup-uv@v10.2.0"
+        with:
+          python-version: "3.13"
+          enable-cache: false
+
+      - name: "Installer les dépendances"
+        run: "uv sync --locked"
+
+      - name: "Lint"
+        run: "uv run ruff check ."
+
+      - name: "verifier le formatage"
+        run: "uv run ruff format --check ."
+
+      - name: "Tests unitaires"
+        run: "uv run pytest tests/unit --cov=supermarket_receipt_api.checkout --cov-report=term-missing"
