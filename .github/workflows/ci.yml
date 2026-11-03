@@ -16,18 +16,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        commande:
         
-        - name: "Lint"
-          value: "uv run ruff check ."
-        - name: "verifier le formatage"
-          value: "uv run ruff format --check ."
-        - name: "Tests unitaires"
-          value: "uv run pytest tests/unit --cov=supermarket_receipt_api.checkout --cov-report=term-missing"
-        - name: "Tests d'intégration"
-          value: "uv run pytest tests/integration --cov=supermarket_receipt_api.checkout --cov-report=term-missing"
+        include:
+         
+          - check: "Lint"
+            command: "uv run ruff check ."
+          - check: "format"
+            command: "uv run ruff format --check ."
+          - check: "Tests unitaires"
+            command: "uv run pytest tests/unit --cov=supermarket_receipt_api.checkout --cov-report=term-missing"
+          - check: "Tests d'intégration"
+            command: "uv run pytest tests/integration --cov=supermarket_receipt_api.checkout --cov-report=term-missing"
 
-    name: "${{ matrix.commande.name }}"
+    name: "${{ matrix.check }}"
     runs-on: "ubuntu-latest"
     timeout-minutes: 5
     steps:
@@ -46,4 +47,4 @@ jobs:
         run: "uv sync --locked"
 
       - name: "Exécuter la commande"
-        run: "${{ matrix.commande.value }}"
+        run: "${{ matrix.command }}"
