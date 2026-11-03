@@ -1,0 +1,14 @@
+name: "Préparer"
+description: "Installe uv avec cache et synchronise les dépendances"
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Installer uv"
+      uses: "astral-sh/setup-uv@v10.2.0"
+      with:
+        enable-cache: true
+        python-version: "3.13"
+    - name: "Synchroniser les dépendances"
+      shell: "bash"
+      run: uv sync --locked
