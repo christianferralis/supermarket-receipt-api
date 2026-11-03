@@ -14,7 +14,7 @@ permissions:
 jobs:
   ci:
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         
         include:
@@ -24,9 +24,12 @@ jobs:
           - check: "format"
             command: "uv run ruff format --check ."
           - check: "Tests unitaires"
-            command: "uv run pytest tests/unit --cov=supermarket_receipt_api.checkout --cov-report=term-missing"
+            command: "uv run pytest tests/unit --cov=supermarket_receipt_api.checkout --cov-report=term-missing --cov-report=xml:rapport/rapport_unitaires.xml"
+            path: "rapport/rapport_unitaires.xml"
+
           - check: "Tests d'intégration"
-            command: "uv run pytest tests/integration --cov=supermarket_receipt_api.checkout --cov-report=term-missing"
+            command: "uv run pytest tests/integration --cov=supermarket_receipt_api.checkout --cov-report=term-missing --cov-report=xml:rapport/rapport_integration.xml"
+            path: "rapport/rapport_integration.xml"
 
     name: "${{ matrix.check }}"
     runs-on: "ubuntu-latest"
@@ -48,3 +51,10 @@ jobs:
 
       - name: "Exécuter la commande"
         run: "${{ matrix.command }}"
+
+      - name: "Uploader les artefacts"
+        if: "${{ !cancelled() && matrix.path }}"
+        uses: "actions/upload-artifact@v7.0.2"
+        with:
+          name: "${{ matrix.check }}"
+          path: "${{ matrix.path }}"
